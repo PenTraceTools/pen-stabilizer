@@ -61,12 +61,7 @@ public:
         const double dt = n ? sample.time - source.back().time : 0;
         const bool boundary = !n || !continuous || dt <= 0 || dt > .050;
         if (boundary) runStart = mutableBegin = n;
-        source.push_back(sample);
-        output.push_back(sample.position);
-        const double ds = boundary ? 0 : (sample.position - source[n-1].position).length();
-        arc.push_back(boundary ? 0 : arc.back() + ds);
-        area.push_back(boundary ? Point{} :
-            area.back() + (sample.position + source[n-1].position) * (ds * .5));
+        storeSample(sample, boundary);
         if (!options.enabled || options.cap == 0) { mutableBegin = n+1; return true; }
         changed = std::max(runStart, mutableBegin);
         // Also recalculate points that just left the live window, once, before
@@ -75,6 +70,36 @@ public:
         while (mutableBegin <= n && sample.time - source[mutableBegin].time >= options.window)
             ++mutableBegin;
         return true;
+    }
+    // Efficient full-prefix evaluation for diagnostic replay. The same filtered()
+    // math is used once per output point, not repeatedly for every live prefix.
+    // continuity is empty (all continuous) or has one flag per source sample.
+    static std::vector<Point> filterBatch(const std::vector<Sample>& input,
+        const std::vector<bool>& continuity = {}, Settings settings = {}) {
+        if (!continuity.empty() && continuity.size() != input.size())
+            throw std::invalid_argument("Continuity/sample count mismatch");
+        Stabilizer result;
+        result.reset(settings);
+        const auto finishRun = [&] {
+            if (settings.enabled && settings.cap != 0)
+                for (std::size_t k=result.runStart; k<result.source.size(); ++k)
+                    result.output[k] = result.filtered(k);
+        };
+        for (std::size_t i=0; i<input.size(); ++i) {
+            const auto& sample=input[i];
+            if (!sample.position.finite() || !std::isfinite(sample.time) ||
+                !std::isfinite(sample.width) || sample.width < 0)
+                throw std::invalid_argument("Invalid batch sample");
+            const double dt=i ? sample.time-input[i-1].time : 0;
+            const bool boundary=!i || (!continuity.empty() && !continuity[i]) || dt<=0 || dt>.050;
+            if (boundary) {
+                finishRun();
+                result.runStart = result.source.size();
+            }
+            result.storeSample(sample,boundary);
+        }
+        finishRun();
+        return std::move(result.output);
     }
     // Finish/cancel never add a point or reshape geometry. Host owns whether a
     // canceled stroke is retained. reset() begins another independent stroke.
@@ -88,6 +113,15 @@ public:
     const Settings& settings() const { return options; }
 
 private:
+    void storeSample(Sample sample, bool boundary) {
+        const auto n=source.size();
+        source.push_back(sample);
+        output.push_back(sample.position);
+        const double ds = boundary ? 0 : (sample.position-source[n-1].position).length();
+        arc.push_back(boundary ? 0 : arc.back()+ds);
+        area.push_back(boundary ? Point{} :
+            area.back()+(sample.position+source[n-1].position)*(ds*.5));
+    }
     std::pair<Point, Point> at(double distance) const {
         auto hi = static_cast<std::size_t>(std::upper_bound(arc.begin()+runStart, arc.end(), distance)-arc.begin());
         hi = std::clamp(hi, runStart+1, source.size()-1);

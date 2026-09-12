@@ -19,6 +19,13 @@ jobs:
       - run: cmake -S . -B build -DPENTRACE_REFERENCE=reference -DCMAKE_BUILD_TYPE=Debug
       - run: cmake --build build --config Debug --parallel
       - run: ctest --test-dir build -C Debug --output-on-failure
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build --parallel
+      - run: ./build/ink_benchmark
   sanitizers:
     runs-on: ubuntu-latest
     steps:

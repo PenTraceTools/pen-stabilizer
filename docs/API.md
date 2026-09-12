@@ -33,9 +33,15 @@
   discard/reset the instance before further use. This version does not promise
   fixed memory, hard-real-time timing or valid arithmetic for extreme numeric
   magnitudes outside ordinary display coordinates/report seconds.
-- Batches are repeated appends in order; there is no separate batch policy.
+- Live input batches are repeated appends in order.
   The host need only redraw once after a batch, taking the minimum changed index
   over all its accepted appends, not only the last call's changed index.
+- `Stabilizer::filterBatch(samples, continuity, settings)` efficiently evaluates
+  a complete diagnostic prefix using the same position math once per output
+  point. It does not mutate an instance or input data. Empty continuity means
+  continuous input; otherwise supply one flag per input sample. Invalid samples
+  or a mismatched flag count throw. Its result matches repeated streaming
+  appends at that prefix, without repeatedly calculating all intermediate tails.
 
 The local-normal formula and normal-use output behavior remain revision 1.
 The public ranges are wider than InfiniPaint's 4–20/.040–.200/0–6 UI clamps,

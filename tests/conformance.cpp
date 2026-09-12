@@ -70,6 +70,22 @@ int main() {
                 require(s.samples()[k].width==static_cast<float>(.1+(k/400.0)*.01),"pressure rewritten");
             }
         }
+        const auto batch=Stabilizer::filterBatch(s.samples());
+        require(batch.size()==s.positions().size(),"batch size");
+        for(std::size_t i=0;i<batch.size();++i)
+            require(near(batch[i],s.positions()[i]),"batch/stream parity");
+        std::vector<Sample> irregular=s.samples();
+        std::vector<bool> continuity(irregular.size(),true);
+        continuity[31]=false;
+        irregular[70].time=irregular[69].time;
+        for(std::size_t i=100;i<irregular.size();++i) irregular[i].time+=.080;
+        for (auto settings : {Settings{},Settings{true,80,.8,40},Settings{false}}) {
+            Stabilizer stream; stream.reset(settings);
+            for(std::size_t i=0;i<irregular.size();++i) stream.append(irregular[i],continuity[i]);
+            const auto b=Stabilizer::filterBatch(irregular,continuity,settings);
+            for(std::size_t i=0;i<b.size();++i)
+                require(near(b[i],stream.positions()[i]),"batch boundary/range parity");
+        }
         for(std::size_t i=80;i+80<s.positions().size();++i) {
             auto p=s.samples()[i].position, q=s.positions()[i];
             rawEnergy+=(p.y-p.x)*(p.y-p.x);
