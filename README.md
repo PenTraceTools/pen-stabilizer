@@ -1,5 +1,7 @@
 # pen-stabilizer
 
+[Pen Tools overview](https://github.com/alexiokay/pen-tools) · [Shared versioning workflow](https://github.com/alexiokay/pen-tools/blob/main/VERSIONING.md)
+
 Experimental, source-first C++17 local-normal pen position correction.
 Package **0.1.0**, algorithm behavior revision **1**. MIT licensed.
 
@@ -73,3 +75,11 @@ prerequisites. This is a library with an API, not a universal protocol/framework
 Version API/package changes separately from behavior changes. Record both
 `package_version` and `algorithm_revision`, parameters and coordinate units in
 diagnostic results. See [CHANGELOG.md](CHANGELOG.md).
+
+## Consumers
+
+[PenTraceLab](https://github.com/alexiokay/pen-trace-lab) uses the batch source API
+for its local-correction comparison. The [InfiniPaint fork](https://github.com/alexiokay/infinipaint-ARM64-Windows/tree/graphite-ui)
+and [upstream proposal #98](https://github.com/ErrorAtLine0/infinipaint/pull/98)
+use the streaming API. Both currently pin the v0.1.0 source commit; their app
+versions and releases are independent. A proposal is not an upstream merge.
