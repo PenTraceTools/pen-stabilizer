@@ -83,3 +83,7 @@ for its local-correction comparison. The [InfiniPaint fork](https://github.com/a
 and [upstream proposal #98](https://github.com/ErrorAtLine0/infinipaint/pull/98)
 use the streaming API. Both currently pin the v0.1.0 source commit; their app
 versions and releases are independent. A proposal is not an upstream merge.
+
+[Real-pen comparison gallery](https://github.com/PenTraceTools/pen-trace-lab/tree/main/docs/comparisons/test6):
+selected same-input raw/corrected examples, pressure/renderer variants and original SVGs.
+This is supplementary replay evidence, not physical ground truth or full-app validation.
