@@ -10,6 +10,17 @@ from PenTraceLab 0.4.0 (`ef6555a6defd12b8dde5afc408df4975eb4492b2`). It is not a
 new pen driver, Windows service, DLL requirement, executable dependency, or Rust
 rewrite. Compile the header into your application. No runtime downloads.
 
+## Real-pen comparison
+
+![Same recorded diagonal: original and corrected positions with measured cross-track RMS](https://raw.githubusercontent.com/PenTraceTools/pen-trace-lab/main/docs/comparisons/test6/diagonal-analysis.png)
+
+On this selected Surface Pro 11 / Metapen M2 stroke, whole-stroke straightness RMS
+is **13.1% lower** (2.313 to 2.009 DIP). Small ripples are visibly reduced; broad
+curvature remains. The vertical scale is expanded. This is batch replay evidence,
+not a hardware-accuracy or live-latency claim.
+[View the image gallery, exact settings and measurement method](https://github.com/PenTraceTools/pen-trace-lab/tree/main/docs/comparisons/test6).
+Only images and aggregate results are public, not the original recording.
+
 ## Native integration
 
 Pin this repository as a Git submodule or vendor a specific released source
